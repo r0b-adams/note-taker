@@ -5,7 +5,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static("public"));
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000;  // gets the port from the bound environment variable, if it exists
 
 const path = require('path');           // this allows the join() method used to concat filepaths in the routes
 const fs = require("fs").promises;      // cofigs methods to return promises instead of callbacks
