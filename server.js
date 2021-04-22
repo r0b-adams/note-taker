@@ -1,40 +1,29 @@
 const express = require('express');
 const app = express();
 
-const PORT = process.env.PORT || 3000;
-
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static("public"));
 
-const path = require('path'); // this allows the join() method used to concat filepaths in the routes
+const PORT = process.env.PORT || 3000;
 
-const fs = require("fs");
-const util = require('util');
+const path = require('path');      // this allows the join() method used to concat filepaths in the routes
+const fs = require("fs").promises; // returns promises instead of callbacks
 
-const readFileProm = util.promisify(fs.readFile);
-const writeFileProm = util.promisify(fs.writeFile);
+async function readFile() {
 
-// works
-function readFile() {
-
-    readFileProm("./db/db.json", "utf8")
-    .then(data=>console.log(data))
-    .catch(err=>console.log(err));
+    const data = await fs.readFile("./db/db.json", "utf8");
+    return JSON.parse(data);
 
 }
 
-readFile();
+// TODO: data must be array of objects
+async function writeFile(data) {
 
+    data = JSON.stringify(data);
+    await fs.writeFile("./db/db.json", data);
 
-
-
-
-
-
-
-
-
+}
 
 // Routes
 
@@ -45,10 +34,10 @@ app.get('/', (req, res) => res.sendFile(path.join(__dirname, './public/index.htm
 app.get('/notes', (req, res) => res.sendFile(path.join(__dirname, './public/notes.html')));
 
 // GET /api/notes should read the db.json file and return all saved notes as JSON.
-app.get('/api/notes', (req, res) => {
-    // MY CODE HERE
-    // console.log(req.body);
-    console.log("GET REQUEST");
+app.get('/api/notes', async(req, res) => {
+    console.log("GET");
+    let data = await readFile();
+    res.json(data);
 });
   
 // POST /api/notes should receive a new note to save on the request body, add it to the db.json file, and then return the new note to the client. 
