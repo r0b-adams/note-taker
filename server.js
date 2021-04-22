@@ -7,26 +7,25 @@ app.use(express.static("public"));
 
 const PORT = process.env.PORT || 3000;
 
-const path = require('path');      // this allows the join() method used to concat filepaths in the routes
-const fs = require("fs").promises; // returns promises instead of callbacks
+const path = require('path');           // this allows the join() method used to concat filepaths in the routes
+const fs = require("fs").promises;      // cofigs methods to return promises instead of callbacks
 
-var uniqid = require('uniqid');    // generates unique keys
+var uniqid = require('uniqid');         // generates unique keys
 
+// reads saved notes from db.json
+// returns array of objects representing saved notes
 async function readFile() {
-
     const data = await fs.readFile("./db/db.json", "utf8");
     return JSON.parse(data);
-
 }
 
+// saves notes to db.json
 async function writeFile(data) {
-
     data = JSON.stringify(data);
     await fs.writeFile("./db/db.json", data);
-
 }
 
-// Pages
+// Routes
 
 // return homepage
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, './public/index.html')));
@@ -34,19 +33,16 @@ app.get('/', (req, res) => res.sendFile(path.join(__dirname, './public/index.htm
 // return note page
 app.get('/notes', (req, res) => res.sendFile(path.join(__dirname, './public/notes.html')));
 
-// APIs
-
 // returns all notes saved in the db
 app.get('/api/notes', async(req, res) => {
     let data = await readFile();
     res.json(data);
 });
   
-// receives a new note 
-// adds it to the db.json file
-// then returns the new note to the client. 
+// adds a new note to db.json
 app.post('/api/notes', async (req, res) => {
-    const newNote = req.body;     // from client
+
+    const newNote = req.body;     // get data from client
     let notes = await readFile(); // get notes array from db
 
     newNote.id = uniqid();        // give new note a unique id
@@ -58,14 +54,23 @@ app.post('/api/notes', async (req, res) => {
 
 });
 
-// BONUS
-// You haven’t learned how to handle DELETE requests, but this application has that functionality in the front end. 
-// As a bonus, see if you can add the DELETE route to the application using the following guideline:
+// deletes a note from db.json and sends updated data to client
+app.delete('/api/notes/:id', async (req, res) => {
 
-// DELETE /api/notes/:id should receive a query parameter containing the id of a note to delete. 
+    let savedNotes = await readFile(); // get notes array from db
+    let clientID = req.params.id;      // get note id from client
 
-// In order to delete a note, you'll need to read all notes from the db.json file, 
-// remove the note with the given id property, 
-// and then rewrite the notes to the db.json file.
+    // iterate over saved items
+    for (let i = 0; i < savedNotes.length; i++) {
 
+        // if the saved note's id matches the one sent by client, remove it
+        if (savedNotes[i].id === clientID) {
+            savedNotes.splice(i,1); 
+        }
+    }
+    await writeFile(savedNotes);       // write modified array to file
+    res.json(savedNotes);              // respond with updated data
+});
+
+// listener
 app.listen(PORT, () => console.log(`App listening on PORT ${PORT}`));
