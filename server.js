@@ -10,6 +10,8 @@ const PORT = process.env.PORT || 3000;
 const path = require('path');      // this allows the join() method used to concat filepaths in the routes
 const fs = require("fs").promises; // returns promises instead of callbacks
 
+var uniqid = require('uniqid');    // generates unique keys
+
 async function readFile() {
 
     const data = await fs.readFile("./db/db.json", "utf8");
@@ -17,7 +19,6 @@ async function readFile() {
 
 }
 
-// TODO: data must be array of objects
 async function writeFile(data) {
 
     data = JSON.stringify(data);
@@ -25,7 +26,7 @@ async function writeFile(data) {
 
 }
 
-// Routes
+// Pages
 
 // return homepage
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, './public/index.html')));
@@ -33,22 +34,27 @@ app.get('/', (req, res) => res.sendFile(path.join(__dirname, './public/index.htm
 // return note page
 app.get('/notes', (req, res) => res.sendFile(path.join(__dirname, './public/notes.html')));
 
-// GET /api/notes should read the db.json file and return all saved notes as JSON.
+// APIs
+
+// returns all notes saved in the db
 app.get('/api/notes', async(req, res) => {
-    console.log("GET");
     let data = await readFile();
     res.json(data);
 });
   
-// POST /api/notes should receive a new note to save on the request body, add it to the db.json file, and then return the new note to the client. 
-// You'll need to find a way to give each note a unique id when it's saved (look into npm packages that could do this for you).
-app.post('/api/notes', (req, res) => {
+// receives a new note 
+// adds it to the db.json file
+// then returns the new note to the client. 
+app.post('/api/notes', async (req, res) => {
+    const newNote = req.body;     // from client
+    let notes = await readFile(); // get notes array from db
 
-    // save the new note
-    console.log("POST REQUEST");
-    // const newNote = req.body;
-    // res.json(newNote);
-    // get the 
+    newNote.id = uniqid();        // give new note a unique id
+    notes.push(newNote);          // save new note to array
+
+    await writeFile(notes);       // write notes array to file
+
+    res.json(newNote);            // send back new note (update front end)
 
 });
 
