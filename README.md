@@ -8,10 +8,7 @@ This application lets a user save and retrieve notes.
 
 ## Table of Contents
 
-- [Installation](#installation)
 - [Usage](#usage)
-- [Contributing](#Contributing)
-- [Testing](#Testing)
 - [Questions](#Questions)
 - [License](#License)
 
