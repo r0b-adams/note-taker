@@ -4,7 +4,7 @@
 
 ## Description
 
-This application lets a user save and retrieve notes.
+Note-taking application that lets a user save and retrieve notes. An early exploration into the Express.js web framework and implementing "create" and "delete" API routes.
 
 ## Table of Contents
 
